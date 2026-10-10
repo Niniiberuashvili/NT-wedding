@@ -4,6 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ნიკუშა & თამუნა - საქორწილო მოწვევა</title>
+
+  <!-- Link preview (WhatsApp, Telegram, Messenger, iMessage...).
+       Replace YOUR-SITE.netlify.app with your real Netlify address in the 4 places below.
+       Image: uses photos/chandelier.png (keep it under ~300 KB; square or 1200x630 looks best) -->
+  <meta name="description" content="ნიკუშა & თამუნა - საქორწილო მოწვევა · 05.11.2026">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ka_GE">
+  <meta property="og:title" content="ნიკუშა & თამუნა - საქორწილო მოწვევა">
+  <meta property="og:description" content="გვინდა ჩვენი ცხოვრების უმნიშვნელოვანესი წუთები თქვენთან ერთად აღვნიშნოთ… 05.11.2026">
+  <meta property="og:url" content="https://YOUR-SITE.netlify.app/">
+  <meta property="og:image" content="https://YOUR-SITE.netlify.app/photos/chandelier.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="https://YOUR-SITE.netlify.app/photos/chandelier.png">
+  <meta name="theme-color" content="#F8F5EE">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&family=Noto+Sans:wght@400;600;700&family=Playfair+Display:ital,wght@1,400&family=Great+Vibes&display=swap" rel="stylesheet">
@@ -34,7 +48,7 @@
     }
 
     html {
-      font-size: 102%;
+      font-size: 98%
       scrollbar-gutter: stable;
     }
 
@@ -949,7 +963,7 @@
 
   <!-- Background music: put your song at music/song.mp3
        Tip: trim the mp3 so it starts at the part you want, then set MUSIC_START_SECONDS = 0 -->
-  <audio id="bgMusic" src="music/song.mp3" loop preload="auto"></audio>
+  <audio id="bgMusic" src="music/song.mp3" preload="auto"></audio>
   <button class="music-btn" id="musicBtn" onclick="toggleMusic()" aria-label="მუსიკა">
     <svg class="icon-on" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
     <svg class="icon-off" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>
@@ -962,13 +976,21 @@
     const music = document.getElementById('bgMusic');
     const musicBtn = document.getElementById('musicBtn');
 
-    // Do the (expensive) seek while the page loads, BEFORE the tap,
-    // so nothing stalls while the envelope animation is running.
     function seekMusic() {
       try { if (MUSIC_START_SECONDS > 0) music.currentTime = MUSIC_START_SECONDS; } catch (e) {}
     }
+
+    // try early (works on desktop / Android)
     if (music.readyState >= 1) seekMusic();
     else music.addEventListener('loadedmetadata', seekMusic, { once: true });
+
+    // phones: once playback has really begun, jump if it started at the beginning
+    music.addEventListener('playing', () => {
+      if (music.currentTime < MUSIC_START_SECONDS - 1) seekMusic();
+    }, { once: true });
+
+    // loop back to the chosen start point, not to 0:00
+    music.addEventListener('ended', () => { seekMusic(); music.play(); });
 
     function openEnvelope() {
       const wrapper = document.getElementById('envelopeWrapper');
