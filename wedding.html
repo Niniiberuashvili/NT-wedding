@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ნიკუშა & თამუნა - საქორწილო მოწვევა</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&family=Noto+Sans:wght@400;600;700&family=Playfair+Display:ital,wght@1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <style>
+    @font-face {
+      font-family: 'DM Revaz Moistsrapishvili';
+      src: url('fonts/DMRevazMoistsrapishvili.woff2') format('woff2'),
+           url('fonts/DMRevazMoistsrapishvili.woff') format('woff'),
+           url('fonts/DMRevazMoistsrapishvili.ttf') format('truetype'),
+           url('fonts/DMRevazMoistsrapishvili.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+10A0-10FF, U+1C90-1CBF, U+2D00-2D2F, U+0020-0025, U+0027-0040, U+2013-2014, U+201C-201E, U+20AC;
+    }
+
+    :root {
+      --font-main: 'DM Revaz Moistsrapishvili', 'Noto Sans Georgian', 'Noto Sans', sans-serif;
+      --bg-cream: #F8F5EE;
+      --sage-green: #9BB098;
+      --sage-dark: #2A3628;
+      --text-dark: #3A3530;
+      --text-muted: #837E77;
+      --card-bg: #FFFFFF;
+      --input-bg: #F2EEE6;
+      --border-color: #E2DDD5;
+    }
+
+    html {
+      font-size: 102%;
+      scrollbar-gutter: stable;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background-color: #C8C4B8;
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 0;
+    }
+
+    /* page can't scroll until the envelope has opened */
+    html:has(body.locked) { overflow: hidden; }
+
+    .mobile-container {
+      width: 100%;
+      max-width: 430px;
+      background-color: var(--bg-cream);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* =====================================================
+       ENVELOPE
+       X-shaped envelope. Tap: seal fades, then the pieces
+       slide away. Only `transform` is animated on the flaps
+       (no opacity), which keeps it smooth on phones.
+       ===================================================== */
+    .envelope-wrapper {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      background: transparent;
+      z-index: 9999;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .envelope-wrapper.open {
+      pointer-events: none;
+    }
+
+    .envelope {
+      /* speed controls: bigger = slower */
+      --dur: 1.4s;    /* how long each piece takes to slide away */
+      --gap: 0s;      /* wait between pieces (0 = all open at once) */
+      --start: .3s;   /* pause after the tap before the first piece moves */
+
+      position: relative;
+      width: min(100%, 430px);
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    .envelope-flap {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      will-change: transform;
+      transition-property: transform;
+      transition-duration: var(--dur);
+      transition-timing-function: cubic-bezier(.6,0,.25,1);
+    }
+
+    .flap-top {
+      background: linear-gradient(180deg, #d9d6cf 0%, #c9c5bc 100%);
+      clip-path: polygon(0 0, 100% 0, 50% 50%);
+      z-index: 6;
+      transition-delay: var(--start);
+    }
+
+    .flap-bottom {
+      background: linear-gradient(0deg, #d3d0c8 0%, #c4c0b7 100%);
+      clip-path: polygon(0 100%, 100% 100%, 50% 50%);
+      z-index: 5;
+      transition-delay: calc(var(--start) + var(--gap));
+    }
+
+    .flap-left {
+      background: linear-gradient(90deg, #cfccc4 0%, #c1bdb4 100%);
+      clip-path: polygon(0 0, 50% 50%, 0 100%);
+      z-index: 4;
+      transition-delay: calc(var(--start) + var(--gap) * 2);
+    }
+
+    .flap-right {
+      background: linear-gradient(270deg, #d1cec6 0%, #c3bfb6 100%);
+      clip-path: polygon(100% 0, 100% 100%, 50% 50%);
+      z-index: 4;
+      transition-delay: calc(var(--start) + var(--gap) * 3);
+    }
+
+    /* thin X fold lines */
+    .envelope-x {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 7;
+      pointer-events: none;
+      transition: opacity .3s ease;
+    }
+
+    .envelope-x line {
+      stroke: rgba(110,100,88,.35);
+      stroke-width: 1;
+    }
+
+    /* gold seal */
+    .wax-seal {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 67px;
+      height: 67px;
+      margin: -33.5px 0 0 -33.5px;
+      transform: scale(1);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #efdc9a 0%, #c9a850 55%, #a78530 100%);
+      border: 2px solid rgba(140,110,40,.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      box-shadow:
+        0 5px 10px rgba(0,0,0,.25),
+        inset 2px 2px 5px rgba(255,255,255,.28),
+        inset -2px -3px 5px rgba(70,65,35,.15);
+      transition: transform .7s ease, opacity .6s ease;
+      animation: sealPulse 2.4s ease-in-out infinite;
+    }
+
+    .wax-seal::before {
+      content: '';
+      position: absolute;
+      width: 51px;
+      height: 51px;
+      border-radius: 50%;
+      border: 1px solid rgba(110,85,25,.4);
+    }
+
+    @keyframes sealPulse {
+      0%, 100% { scale: 1; }
+      50%      { scale: 1.06; }
+    }
+
+    /* seal lettering: calligraphic, embossed into the gold */
+    .wax-seal > span {
+      font-family: 'Great Vibes', cursive !important;
+      font-weight: 400 !important;
+      font-size: 27px !important;
+      line-height: 1;
+      color: #8a6a1f;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      text-shadow: 0 1px 0 rgba(255,240,190,.75), 0 -1px 0 rgba(90,65,10,.45);
+      transform: translateY(-1px);
+    }
+
+    .wax-seal .amp {
+      font-size: .7em;
+      color: #8a6a1f;
+      margin: 0 .05em;
+    }
+
+    /* opening */
+    .envelope-wrapper.open .wax-seal {
+      transform: scale(.85);
+      opacity: 0;
+      animation: none;
+    }
+
+    .envelope-wrapper.open .envelope-x {
+      opacity: 0;
+      transition-delay: .3s;
+      transition-duration: .6s;
+    }
+
+    .envelope-wrapper.open .flap-top    { transform: translateY(-102%); }
+    .envelope-wrapper.open .flap-bottom { transform: translateY(102%); }
+    .envelope-wrapper.open .flap-left   { transform: translateX(-102%); }
+    .envelope-wrapper.open .flap-right  { transform: translateX(102%); }
+
+    /* Countdown Timer Section */
+    .countdown-section {
+      background-color: var(--sage-green);
+      color: #333;
+      text-align: center;
+      padding: 25px 20px;
+      margin-bottom: 20px;
+    }
+
+    .countdown-grid {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .countdown-num {
+      font-size: 2.2rem;
+      font-weight: 400;
+      color: #1A2418;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .countdown-colon {
+      font-size: 1.8rem;
+      font-weight: 300;
+      color: #1A2418;
+      margin-top: -8px;
+    }
+
+    .countdown-labels {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      font-size: 0.8rem;
+      color: #3D4A3B;
+      margin-top: 2px;
+    }
+
+    .countdown-labels span {
+      width: 52px;
+      text-align: center;
+    }
+
+    /* Couple Section */
+    .couple-section {
+      text-align: center;
+      padding: 35px 20px 25px 20px;
+    }
+
+    .couple-photo {
+      width: 100px;
+      height: auto;
+      margin: 0 auto 15px auto;
+      display: block;
+      background: none;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* white-flower + eucalyptus corners, on every section */
+    .couple-section, .timeline-section, .location-section, .rsvp-section, .footer-section { position: relative; overflow: hidden; }
+    .couple-section > *:not(.flora), .timeline-section > *:not(.fl), .location-section > *:not(.fl),
+    .rsvp-section > *:not(.fl), .footer-section > *:not(.fl) { position: relative; z-index: 1; }
+    .flora { position: absolute; z-index: 0; pointer-events: none; width: 150px; height: 131px; }
+    .flora.tl { left: -6px;  top: -6px; }
+    .flora.tr { right: -6px; top: -6px; transform: scaleX(-1); }
+    .fl { position: absolute; z-index: 0; pointer-events: none; height: auto; }
+    .fl.tl { top: -6px;    left: -8px; }
+    .fl.tr { top: -6px;    right: -8px;  transform: scaleX(-1); }
+    .fl.bl { bottom: -6px; left: -8px;   transform: scaleY(-1); }
+    .fl.br { bottom: -6px; right: -8px;  transform: scale(-1, -1); }
+    .fl.ml { top: 42%; left: -34px; }
+    .fl.mr { top: 68%; right: -34px; transform: scaleX(-1); }
+
+    .couple-names {
+      font-weight: 600;
+      font-size: 2.4rem;
+      color: #795B53;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    .save-the-date-tag {
+      font-size: 0.8rem;
+      letter-spacing: 4px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      font-weight: 400;
+    }
+
+    .main-date {
+      font-size: 2.3rem;
+      font-weight: 600;
+      color: #2D2926;
+      letter-spacing: 3px;
+      margin-bottom: 35px;
+    }
+
+    /* Cards Section */
+    .cards-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px 35px 20px;
+      position: relative;
+    }
+
+    .person-card {
+      background: #FFF;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 12px 14px 12px;
+      width: 140px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .person-avatar-img {
+      width: 80px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin: 0 auto 10px auto;
+      display: block;
+    }
+
+    .person-name {
+      font-weight: 500;
+      font-size: 1.1rem;
+      color: #5D4037;
+    }
+
+    .heart-icon-middle {
+      width: 22px;
+      height: 22px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Timeline Section */
+    .timeline-section {
+      padding: 10px 25px 40px 25px;
+      text-align: center;
+    }
+
+    .timeline-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #382F28;
+      margin-bottom: 25px;
+    }
+
+    .timeline {
+      position: relative;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      bottom: 15px;
+      left: 50%;
+      width: 1px;
+      background-color: #D3C2B3;
+      transform: translateX(-50%);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 35px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .timeline-icon {
+      width: 38px;
+      height: 38px;
+      background-color: var(--bg-cream);
+      border: 1px solid #C4B5A5;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+      margin-bottom: 10px;
+    }
+
+    .timeline-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: #6D594C;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .timeline-time {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #2D2926;
+      margin-bottom: 4px;
+    }
+
+    .timeline-event {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #4A3B32;
+      margin-bottom: 6px;
+    }
+
+    /* UNIFIED IMAGE SIZE FOR TIMELINE & VENUE PHOTOS */
+    .timeline-img,
+    .venue-img {
+      width: 100%;
+      max-width: 280px;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-top: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .timeline-desc {
+      font-size: 0.82rem;
+      color: #706860;
+      max-width: 260px;
+      line-height: 1.45;
+    }
+
+    /* Location Section */
+    .location-section {
+      text-align: center;
+      padding: 10px 25px 40px 25px;
+    }
+
+    .location-title {
+      font-size: 1.45rem;
+      letter-spacing: 5px;
+      color: #382F28;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .location-venue {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #382F28;
+      margin-bottom: 8px;
+    }
+
+    .location-time-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .location-address {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .map-embed-container {
+      width: 100%;
+      height: 250px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .map-embed-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* RSVP Section */
+    .rsvp-section {
+      padding: 30px 25px 40px 25px;
+      text-align: center;
+    }
+
+    .rsvp-title {
+      font-size: 1.6rem;
+      letter-spacing: 4px;
+      color: #382F28;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .rsvp-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      color: #554E46;
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      background-color: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #333;
+      outline: none;
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 6px;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: #443F3A;
+      cursor: pointer;
+    }
+
+    .radio-label input[type="radio"] {
+      accent-color: var(--sage-dark);
+      width: 16px;
+      height: 16px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background-color: #2F2B28;
+      color: #FFF;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 25px;
+    }
+
+    /* Footer Section */
+    .footer-section {
+      text-align: center;
+      padding: 30px 20px 40px 20px;
+      background-color: #F2EEE6;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .contact-title {
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      color: var(--text-muted);
+      margin-bottom: 15px;
+    }
+
+    .contact-line {
+      font-size: 0.85rem;
+      color: #4A423B;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .contact-line a {
+      color: #4A423B;
+      text-decoration: underline;
+    }
+
+    .footer-couple-names {
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: #795B53;
+      margin-top: 25px;
+      margin-bottom: 5px;
+    }
+
+    .footer-date {
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      color: var(--text-muted);
+    }
+
+    .scroll-top-btn {
+      width: 32px;
+      height: 32px;
+      background: #332F2C;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px auto 10px auto;
+      cursor: pointer;
+    }
+
+    .scroll-top-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: #FFF;
+    }
+
+    /* Pretty ampersand */
+    .amp {
+      font-family: 'Playfair Display', Georgia, serif !important;
+      font-style: italic !important;
+      font-weight: 400 !important;
+      font-size: 1.25em;
+      color: #B08A7A;
+      display: inline-block;
+      line-height: 1;
+      margin: 0 .08em;
+      transform: translateY(.04em);
+    }
+
+    *, *::before, *::after, svg text, svg tspan, button, input, textarea {
+      font-family: var(--font-main) !important;
+      font-style: normal !important;
+      font-synthesis: none;
+    }
+
+    /* Music button */
+    .music-btn {
+      position: fixed;
+      bottom: 18px;
+      right: max(16px, calc(50vw - 215px + 16px));
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.5);
+      background: rgba(51,47,44,.85);
+      color: #fff;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,.25);
+    }
+    .music-btn.visible { display: flex; }
+    .music-btn svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .music-btn .icon-off { display: none; }
+    .music-btn.muted .icon-on { display: none; }
+    .music-btn.muted .icon-off { display: block; }
+
+  </style>
+</head>
+<body class="locked">
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="floraArt" viewBox="0 0 160 140"><defs><radialGradient id="pet"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".7" stop-color="#FBF7EF"/><stop offset="1" stop-color="#EFE4D0"/></radialGradient><radialGradient id="pet2"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F4EBDC"/></radialGradient></defs><path d="M-5 12C40 4 85 34 130 22" fill="none" stroke="#7F9A7C" stroke-width="1.2" stroke-linecap="round"/><g transform="translate(11.2 10.6) rotate(-50) scale(1.00)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#8FA88B"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(11.2 10.6) rotate(50) scale(1.23)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#A9BFA3"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(27.6 11.7) rotate(-41) scale(1.25)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#6F8F6E"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(27.6 11.7) rotate(55) scale(0.86)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#5F7F60"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(44.0 14.5) rotate(-35) scale(0.88)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#A9BFA3"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(44.0 14.5) rotate(57) scale(1.07)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#8FA88B"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(60.4 18.0) rotate(-31) scale(1.08)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#5F7F60"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(60.4 18.0) rotate(57) scale(0.75)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#6F8F6E"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(76.8 21.5) rotate(-31) scale(0.75)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#8FA88B"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(76.8 21.5) rotate(53) scale(0.92)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#A9BFA3"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(93.2 24.1) rotate(-34) scale(0.92)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#6F8F6E"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(93.2 24.1) rotate(46) scale(0.63)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#5F7F60"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(109.6 24.8) rotate(-39) scale(0.62)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#A9BFA3"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(109.6 24.8) rotate(37) scale(0.77)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#8FA88B"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(126.0 23.0) rotate(-48) scale(0.75)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#5F7F60"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(126.0 23.0) rotate(24) scale(0.52)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#6F8F6E"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(130.0 22.0) rotate(-15) scale(0.50)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#A9BFA3"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><path d="M6 -6C0 45 30 85 24 128" fill="none" stroke="#7F9A7C" stroke-width="1.2" stroke-linecap="round"/><g transform="translate(5.3 11.9) rotate(38) scale(1.25)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#6F8F6E"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(5.3 11.9) rotate(138) scale(0.86)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#5F7F60"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(6.9 29.2) rotate(33) scale(0.88)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#A9BFA3"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(6.9 29.2) rotate(129) scale(1.08)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#8FA88B"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(10.2 45.8) rotate(31) scale(1.09)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#5F7F60"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(10.2 45.8) rotate(123) scale(0.75)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#6F8F6E"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(14.4 61.9) rotate(31) scale(0.76)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#8FA88B"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(14.4 61.9) rotate(119) scale(0.93)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#A9BFA3"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(18.7 77.7) rotate(33) scale(0.94)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#6F8F6E"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(18.7 77.7) rotate(117) scale(0.65)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#5F7F60"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(22.3 93.2) rotate(39) scale(0.64)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#A9BFA3"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(22.3 93.2) rotate(119) scale(0.79)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#8FA88B"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(24.5 108.6) rotate(48) scale(0.78)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#5F7F60"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(24.5 108.6) rotate(124) scale(0.54)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#6F8F6E"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(24.4 124.1) rotate(59) scale(0.53)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#8FA88B"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(24.4 124.1) rotate(131) scale(0.65)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#A9BFA3"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(24.0 128.0) rotate(98) scale(0.47)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#A9BFA3"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><path d="M0 0C30 30 55 60 100 92" fill="none" stroke="#7F9A7C" stroke-width="1.2" stroke-linecap="round"/><g transform="translate(10.6 10.8) rotate(-4) scale(0.94)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#A9BFA3"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(10.6 10.8) rotate(96) scale(1.15)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#8FA88B"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(23.0 23.6) rotate(-2) scale(1.16)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#5F7F60"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(23.0 23.6) rotate(94) scale(0.80)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#6F8F6E"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(35.5 36.4) rotate(-1) scale(0.80)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#8FA88B"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(35.5 36.4) rotate(91) scale(0.99)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#A9BFA3"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(48.6 49.4) rotate(-0) scale(0.98)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#6F8F6E"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(48.6 49.4) rotate(88) scale(0.68)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#5F7F60"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(62.8 62.4) rotate(-0) scale(0.67)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#A9BFA3"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(62.8 62.4) rotate(84) scale(0.82)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#8FA88B"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(78.5 75.7) rotate(-1) scale(0.80)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#5F7F60"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(78.5 75.7) rotate(79) scale(0.55)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#6F8F6E"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(96.0 89.1) rotate(-2) scale(0.54)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#8FA88B"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(96.0 89.1) rotate(74) scale(0.66)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#A9BFA3"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(100.0 92.0) rotate(35) scale(0.47)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#A9BFA3"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><ellipse cx="40.0" cy="28.3" rx="14.3" ry="10.9" transform="rotate(0 40.0 28.3)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".6"/><ellipse cx="50.1" cy="34.1" rx="14.3" ry="10.9" transform="rotate(60 50.1 34.1)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".6"/><ellipse cx="50.1" cy="45.9" rx="14.3" ry="10.9" transform="rotate(120 50.1 45.9)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".6"/><ellipse cx="40.0" cy="51.7" rx="14.3" ry="10.9" transform="rotate(180 40.0 51.7)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".6"/><ellipse cx="29.9" cy="45.9" rx="14.3" ry="10.9" transform="rotate(240 29.9 45.9)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".6"/><ellipse cx="29.9" cy="34.1" rx="14.3" ry="10.9" transform="rotate(300 29.9 34.1)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".6"/><ellipse cx="42.9" cy="35.0" rx="9.4" ry="7.3" transform="rotate(30 42.9 35.0)" fill="url(#pet2)" stroke="#E9DCC6" stroke-width=".5"/><ellipse cx="45.6" cy="41.2" rx="9.4" ry="7.3" transform="rotate(102 45.6 41.2)" fill="url(#pet2)" stroke="#E9DCC6" stroke-width=".5"/><ellipse cx="40.6" cy="45.7" rx="9.4" ry="7.3" transform="rotate(174 40.6 45.7)" fill="url(#pet2)" stroke="#E9DCC6" stroke-width=".5"/><ellipse cx="34.8" cy="42.3" rx="9.4" ry="7.3" transform="rotate(246 34.8 42.3)" fill="url(#pet2)" stroke="#E9DCC6" stroke-width=".5"/><ellipse cx="36.2" cy="35.7" rx="9.4" ry="7.3" transform="rotate(318 36.2 35.7)" fill="url(#pet2)" stroke="#E9DCC6" stroke-width=".5"/><circle cx="40" cy="40" r="3.6" fill="#E8D49A"/><circle cx="45.2" cy="40.0" r=".9" fill="#c9a850"/><circle cx="43.3" cy="44.0" r=".9" fill="#c9a850"/><circle cx="38.9" cy="45.1" r=".9" fill="#c9a850"/><circle cx="35.4" cy="42.4" r=".9" fill="#c9a850"/><circle cx="35.2" cy="37.9" r=".9" fill="#c9a850"/><circle cx="38.7" cy="35.0" r=".9" fill="#c9a850"/><circle cx="43.1" cy="35.8" r=".9" fill="#c9a850"/><ellipse cx="99.2" cy="15.0" rx="8.1" ry="4.4" transform="rotate(-80 99.2 15.0)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="105.1" cy="21.0" rx="8.1" ry="4.4" transform="rotate(-8 105.1 21.0)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="101.1" cy="28.4" rx="8.1" ry="4.4" transform="rotate(64 101.1 28.4)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="92.9" cy="27.0" rx="8.1" ry="4.4" transform="rotate(136 92.9 27.0)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="91.7" cy="18.6" rx="8.1" ry="4.4" transform="rotate(208 91.7 18.6)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><circle cx="98" cy="22" r="2.2" fill="#d8bd6a"/><ellipse cx="25.6" cy="89.8" rx="8.1" ry="4.4" transform="rotate(-60 25.6 89.8)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="29.0" cy="97.5" rx="8.1" ry="4.4" transform="rotate(12 29.0 97.5)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="22.7" cy="103.1" rx="8.1" ry="4.4" transform="rotate(84 22.7 103.1)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="15.5" cy="98.9" rx="8.1" ry="4.4" transform="rotate(156 15.5 98.9)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="17.2" cy="90.7" rx="8.1" ry="4.4" transform="rotate(228 17.2 90.7)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><circle cx="22" cy="96" r="2.2" fill="#d8bd6a"/><ellipse cx="76.0" cy="60.5" rx="6.2" ry="3.4" transform="rotate(-90 76.0 60.5)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="81.2" cy="64.3" rx="6.2" ry="3.4" transform="rotate(-18 81.2 64.3)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="79.2" cy="70.4" rx="6.2" ry="3.4" transform="rotate(54 79.2 70.4)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="72.8" cy="70.4" rx="6.2" ry="3.4" transform="rotate(126 72.8 70.4)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><ellipse cx="70.8" cy="64.3" rx="6.2" ry="3.4" transform="rotate(198 70.8 64.3)" fill="url(#pet)" stroke="#E4D6BF" stroke-width=".5"/><circle cx="76" cy="66" r="1.7" fill="#d8bd6a"/><g transform="translate(62.0 30.0) rotate(-30) scale(0.81)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#6F8F6E"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(28.0 70.0) rotate(60) scale(0.75)"><path d="M0 0C3 -5 11 -5 16 0C11 5 3 5 0 0Z" fill="#5F7F60"/><path d="M1 0L14 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><g transform="translate(66.0 44.0) rotate(30) scale(0.92)"><path d="M0 0C2 -6 9 -6.5 12 0C9 6.5 2 6 0 0Z" fill="#8FA88B"/><path d="M1 0L10 0" stroke="#fff" stroke-opacity=".35" stroke-width=".8" fill="none"/></g><circle cx="70" cy="10" r="1" fill="#c9a850"/><circle cx="12" cy="60" r="1" fill="#c9a850"/><circle cx="88" cy="52" r="1" fill="#c9a850"/><circle cx="52" cy="88" r="1" fill="#c9a850"/><circle cx="120" cy="40" r="1" fill="#c9a850"/><circle cx="46" cy="120" r="1" fill="#c9a850"/></symbol></svg>
+
+  <!-- Fullscreen Envelope -->
+  <div class="envelope-wrapper" id="envelopeWrapper" onclick="openEnvelope()">
+    <div class="envelope">
+
+      <div class="envelope-flap flap-top"></div>
+      <div class="envelope-flap flap-bottom"></div>
+      <div class="envelope-flap flap-left"></div>
+      <div class="envelope-flap flap-right"></div>
+
+      <svg class="envelope-x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="0" y1="0" x2="100" y2="100" vector-effect="non-scaling-stroke"/>
+        <line x1="100" y1="0" x2="0" y2="100" vector-effect="non-scaling-stroke"/>
+      </svg>
+
+      <div class="wax-seal">
+        <span>N<span class="amp">&amp;</span>T</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mobile-container">
+    <!-- Invitation Main Content -->
+    <div class="invitation-content" id="invitationContent">
+
+      <div class="couple-section">
+        <svg class="flora tl" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <svg class="flora tr" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <img src="photos/chandelier.png" alt="ნიკუშა & თამუნა" class="couple-photo" decoding="async">
+
+        <h1 class="couple-names">ნიკუშა <span class="amp">&amp;</span> თამუნა</h1>
+        <div class="save-the-date-tag">გვინდა ჩვენი ცხოვრების უმნიშვნელოვანესი წუთები თქვენთან ერთად აღვნიშნოთ…</div>
+        <div class="main-date">05.11.2026</div>
+      </div>
+
+      <div class="cards-container">
+        <!-- Groom Card (Nikusha) -->
+        <div class="person-card">
+          <img src="photos/nika.png" alt="ნიკუშა" class="person-avatar-img" decoding="async">
+          <div class="person-name">ნიკუშა</div>
+        </div>
+
+        <!-- Middle Heart -->
+        <div class="heart-icon-middle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B0A090" stroke-width="1.5">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+
+        <!-- Bride Card (Tamuna) -->
+        <div class="person-card">
+          <img src="photos/tamo.png" alt="თამუნა" class="person-avatar-img" decoding="async">
+          <div class="person-name">თამუნა</div>
+        </div>
+      </div>
+
+      <div class="countdown-section">
+        <div class="countdown-grid">
+          <div class="countdown-box"><span class="countdown-num" id="days">000</span></div>
+          <span class="countdown-colon">:</span>
+          <div class="countdown-box"><span class="countdown-num" id="hours">00</span></div>
+          <span class="countdown-colon">:</span>
+          <div class="countdown-box"><span class="countdown-num" id="minutes">00</span></div>
+          <span class="countdown-colon">:</span>
+          <div class="countdown-box"><span class="countdown-num" id="seconds">00</span></div>
+        </div>
+
+        <div class="countdown-labels">
+          <span>დღე</span>
+          <span>საათი</span>
+          <span>წუთი</span>
+          <span>წამი</span>
+        </div>
+      </div>
+
+      <div class="timeline-section">
+        <svg class="fl tr" style="width:130px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <svg class="fl ml" style="width:115px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <svg class="fl mr" style="width:115px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <svg class="fl bl" style="width:130px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <div class="timeline-title">დღის გეგმა</div>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 6.5C10.5 5 8 4.5 4 4.5v13c4 0 6.5.5 8 2 1.5-1.5 4-2 8-2v-13c-4 0-6.5.5-8 2z"/><path d="M12 6.5v13"/></svg>
+            </div>
+            <div class="timeline-time">11:00</div>
+            <div class="timeline-event">მწერალთა სახლი</div>
+            <img src="photos/writershouse.png" alt="მწერალთა სახლი" class="timeline-img" decoding="async">
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <svg viewBox="0 0 24 24"><path d="M5 19C5 10 10 5 19 5c0 9-5 14-14 14z"/><path d="M5 19L14 10"/></svg>
+            </div>
+            <div class="timeline-time">13:00</div>
+            <div class="timeline-event">ბოტანიკური ბაღი</div>
+            <img src="photos/botanical.png" alt="ბოტანიკური ბაღი" class="timeline-img" decoding="async">
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2v4M10.2 3.8h3.6"/><path d="M7 11l5-5 5 5"/><path d="M7 11v10h10V11"/><path d="M10 21v-3.5a2 2 0 0 1 4 0V21"/></svg>
+            </div>
+            <div class="timeline-time">15:00</div>
+            <div class="timeline-event">ჯვრისწერა "მეტეხი"</div>
+            <img src="photos/jvriscera.png" alt="ჯვრისწერა 'მეტეხი'" class="timeline-img" decoding="async">
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5"/><path d="M14 3l4 4v3"/><path d="M14 3v4h4"/><path d="M8 11h6M8 15h3"/><path d="M14 20l.8-3L19.5 12.3a1.5 1.5 0 0 1 2.1 2.1L16.9 19.2z"/></svg>
+            </div>
+            <div class="timeline-time">16:00</div>
+            <div class="timeline-event">ხელისმოწერა "ლისი მერე"</div>
+            <img src="photos/lisi.png" alt="ლისი მერე" class="timeline-img" decoding="async">
+          </div>
+        </div>
+      </div>
+
+      <div class="location-section">
+        <svg class="fl tl" style="width:125px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <svg class="fl br" style="width:125px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <div class="location-title">ლოკაცია</div>
+        <div class="location-venue">ლისი მერე</div>
+
+        <div class="location-time-info">
+          <span>18:00 · 05.11.2026</span>
+        </div>
+
+        <div class="location-address">თბილისი, საქართველო</div>
+
+        <!-- Embedded Google Map -->
+        <div class="map-embed-container">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2977.892330881933!2d44.7335688!3d41.7228227!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x404473d22f726ca1%3A0x29a77e334817e08e!2sLisi%20Mere!5e0!3m2!1ska!2sge!4v1700000000000!5m2!1ska!2sge"
+            width="100%"
+            height="100%"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+      </div>
+
+      <div class="rsvp-section">
+        <svg class="fl tr" style="width:125px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <svg class="fl bl" style="width:125px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <div class="rsvp-title">დასწრება</div>
+        <div class="rsvp-subtitle">გთხოვთ დაადასტუროთ თქვენი დასწრება</div>
+
+        <form id="rsvpForm" onsubmit="handleRSVP(event)">
+          <div class="form-group">
+            <label class="form-label" for="fullName">სახელი & გვარი</label>
+            <input type="text" id="fullName" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="guestCount">სტუმრების რაოდენობა</label>
+            <input type="number" id="guestCount" class="form-control" value="1" min="1" max="10" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">დაესწრებით თქვენ?</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="attending" value="დიახ, დავესწრები" required>
+                დიახ, დავესწრები
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="attending" value="სამწუხაროდ, ვერ">
+                სამწუხაროდ, ვერ
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="wishes">საყვარელი სიტყვა წყვილისათვის</label>
+            <textarea id="wishes" class="form-control" placeholder="დაუტოვეთ სურვილი წყვილს..."></textarea>
+          </div>
+
+          <button type="submit" id="submitBtn" class="submit-btn">
+            <span id="btnText">გაგზავნა</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="footer-section">
+        <svg class="fl tl" style="width:110px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <svg class="fl tr" style="width:110px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <svg class="fl bl" style="width:125px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <svg class="fl br" style="width:125px" viewBox="0 0 160 140" aria-hidden="true"><use href="#floraArt"/></svg>
+        <div class="contact-title">დაგვიკავშირდით</div>
+
+        <div class="contact-line">
+          <span>📞 ნიკა</span>
+          <a href="tel:+995591328180">+995 591 32 81 80</a>
+        </div>
+        <div class="contact-line">
+          <span>📞 თამუნა</span>
+          <a href="tel:+995557442055">+995 557 44 20 55</a>
+        </div>
+
+        <div class="footer-couple-names">ნიკუშა <span class="amp">&amp;</span> თამუნა</div>
+        <div class="footer-date">05 . 11 . 2026</div>
+
+        <div class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Background music: put your song at music/song.mp3
+       Tip: trim the mp3 so it starts at the part you want, then set MUSIC_START_SECONDS = 0 -->
+  <audio id="bgMusic" src="music/song.mp3" loop preload="auto"></audio>
+  <button class="music-btn" id="musicBtn" onclick="toggleMusic()" aria-label="მუსიკა">
+    <svg class="icon-on" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+    <svg class="icon-off" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>
+  </button>
+
+  <script>
+    // second of the song where the music should start (0 = from the beginning)
+    const MUSIC_START_SECONDS = 44;
+
+    const music = document.getElementById('bgMusic');
+    const musicBtn = document.getElementById('musicBtn');
+
+    // Do the (expensive) seek while the page loads, BEFORE the tap,
+    // so nothing stalls while the envelope animation is running.
+    function seekMusic() {
+      try { if (MUSIC_START_SECONDS > 0) music.currentTime = MUSIC_START_SECONDS; } catch (e) {}
+    }
+    if (music.readyState >= 1) seekMusic();
+    else music.addEventListener('loadedmetadata', seekMusic, { once: true });
+
+    function openEnvelope() {
+      const wrapper = document.getElementById('envelopeWrapper');
+      if (wrapper.classList.contains('open')) return;
+
+      // 1) the envelope opens immediately
+      wrapper.classList.add('open');
+
+      // 2) unlock scrolling and remove the envelope when the last piece has finished moving
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        document.body.classList.remove('locked');
+        wrapper.style.display = 'none';
+      };
+      document.querySelector('.flap-right').addEventListener('transitionend', (e) => {
+        if (e.propertyName === 'transform') finish();
+      });
+      setTimeout(finish, 3500); // safety net in case transitionend never fires
+
+      // 3) music: play() must stay inside the tap handler (required by iOS);
+      //    the seek was already done above, so this is cheap
+      try {
+        music.volume = 0.9;
+        const p = music.play();
+        if (p && p.then) p.then(() => musicBtn.classList.remove('muted')).catch(() => musicBtn.classList.add('muted'));
+        musicBtn.classList.add('visible');
+      } catch (e) { console.error(e); }
+    }
+
+    function toggleMusic() {
+      if (music.paused) { music.play(); musicBtn.classList.remove('muted'); }
+      else { music.pause(); musicBtn.classList.add('muted'); }
+    }
+
+    const targetDate = new Date('November 5, 2026 00:00:01').getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        document.getElementById('days').innerText = String(days).padStart(3, '0');
+        document.getElementById('hours').innerText = String(hours).padStart(2, '0');
+        document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
+        document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
+      }
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // ---------- RSVP ----------
+    // Paste your Apps Script "Web app" URL (the one ending in /exec) here.
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1VdazgyRUHoOWv7hSDB7YlGRQzDh7P_iIGiqiICb2DSYrv1fUozkZ5n7XRwvjA41Y/exec';
+
+    async function handleRSVP(event) {
+      event.preventDefault();
+
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+
+      submitBtn.disabled = true;
+      btnText.innerText = 'იგზავნება...';
+
+      const formData = {
+        fullName: document.getElementById('fullName').value,
+        guestCount: document.getElementById('guestCount').value,
+        attending: document.querySelector('input[name="attending"]:checked').value,
+        wishes: document.getElementById('wishes').value
+      };
+
+      try {
+        // text/plain avoids a CORS preflight, which Apps Script can't answer.
+        // No 'no-cors' here, so we can read the real response and catch failures.
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(formData)
+        });
+        // accept either the plain text "ok" (old script) or JSON {ok:true} (new script)
+        const text = await res.text();
+        let success = text.trim().toLowerCase() === 'ok';
+        if (!success) {
+          try { success = JSON.parse(text).ok === true; } catch (e) {}
+        }
+        if (!success) throw new Error(text.slice(0, 120) || 'Unknown error');
+
+        alert('გმადლობთ! თქვენი პასუხი წარმატებით გაიგზავნა.');
+        document.getElementById('rsvpForm').reset();
+      } catch (error) {
+        console.error('Error:', error);
+        alert('დაფიქსირდა შეცდომა. გთხოვთ სცადოთ ხელახლა.\n(' + error.message + ')');
+      } finally {
+        submitBtn.disabled = false;
+        btnText.innerText = 'გაგზავნა';
+      }
+    }
+  </script>
+
+</body>
+</html>
